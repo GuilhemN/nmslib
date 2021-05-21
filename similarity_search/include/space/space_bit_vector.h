@@ -190,6 +190,8 @@ class SpaceBitVector : public Space<dist_t> {
       THROW_RUNTIME_ERR(err);
     }
     for (auto val : v) {
+      std::cout << v << std::endl;
+  
       if (val != 0 && val != 1) {
         PREPARE_RUNTIME_ERR(err) << "Only zeros and ones are allowed, offending line: '" << line << "'";
         LOG(LIB_ERROR) << err.stream().str();
