@@ -42,7 +42,7 @@ class SpaceBitJaccard : public SpaceBitVector<dist_t,dist_uint_t> {
  protected:
   virtual dist_t HiddenDistance(const Object* obj1, const Object* obj2) const {
     CHECK(obj1->datalength() > 0);
-    cout << obj1->datalength() << ' ' << obj2->datalength() << std::endl;
+    // cout << obj1->datalength() << ' ' << obj2->datalength() << std::endl;
     CHECK(obj1->datalength() == obj2->datalength());
     const dist_uint_t* x = reinterpret_cast<const dist_uint_t*>(obj1->data());
     const dist_uint_t* y = reinterpret_cast<const dist_uint_t*>(obj2->data());
