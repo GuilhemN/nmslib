@@ -172,6 +172,7 @@ class SpaceBitVector : public Space<dist_t> {
       unsigned val;
 
       while (str >> val) {
+      std::cout << val << std::endl;
         if (val != 0 && val != 1) {
           throw runtime_error("Only zeros and ones are allowed");
         }
