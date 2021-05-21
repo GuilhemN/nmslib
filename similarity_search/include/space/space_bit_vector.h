@@ -198,7 +198,7 @@ class SpaceBitVector : public Space<dist_t> {
     }
   #endif
     Binarize(v, 1, binVect);      // Create the binary vector
-    std::count << "c'est une ligne: " << line << ", taille:" << v.size() << std::endl;
+    std::cout << "c'est une ligne: " << line << ", taille:" << v.size() << std::endl;
     // std::cout << v.size() << std::endl;
     binVect.push_back(v.size());   // Put the number of elements in the end
   }
