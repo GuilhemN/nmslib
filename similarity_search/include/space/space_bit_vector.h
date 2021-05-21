@@ -172,7 +172,6 @@ class SpaceBitVector : public Space<dist_t> {
       unsigned val;
 
       while (str >> val) {
-      std::cout << val << std::endl;
         if (val != 0 && val != 1) {
           throw runtime_error("Only zeros and ones are allowed");
         }
@@ -190,9 +189,7 @@ class SpaceBitVector : public Space<dist_t> {
       LOG(LIB_ERROR) << err.stream().str();
       THROW_RUNTIME_ERR(err);
     }
-    for (auto val : v) {
-      std::cout << val << std::endl;
-  
+    for (auto val : v) {  
       if (val != 0 && val != 1) {
         PREPARE_RUNTIME_ERR(err) << "Only zeros and ones are allowed, offending line: '" << line << "'";
         LOG(LIB_ERROR) << err.stream().str();
@@ -201,6 +198,7 @@ class SpaceBitVector : public Space<dist_t> {
     }
   #endif
     Binarize(v, 1, binVect);      // Create the binary vector
+    std::cout << v.size() << std::endl;
     binVect.push_back(v.size());   // Put the number of elements in the end
   }
 
