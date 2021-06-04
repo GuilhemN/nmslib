@@ -100,6 +100,7 @@ Object *SpaceSparseJaccardGoldfinger<dist_t>::CreateObjFromIds(IdType id, LabelT
     IdType hash = (id*5) & (size -1);
     sketch[hash >> 5] |= 1 << (hash & (32-1));
   }
+  sketch.push_back(size);
 
   return new Object(id, LABEL_GOLDFINGER, sketch.size() * sizeof(IdType), &sketch[0]);
 };
