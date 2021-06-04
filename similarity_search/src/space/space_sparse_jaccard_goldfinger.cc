@@ -94,11 +94,11 @@ Object *SpaceSparseJaccardGoldfinger<dist_t>::CreateObjFromIds(IdType id, LabelT
     return new Object(id, label, InpVect.size() * sizeof(IdType), &InpVect[0]);
 
   int size = 1024;
-  vector<uint32_t> sketch((size+31)/32, 0);
+  vector<IdType> sketch((size+31)/32, 0);
 
   for (IdType id: InpVect) {
-    IdType hash = (id*5) % size;
-    sketch[hash/32] |= 1 << (hash % 32);
+    IdType hash = (id*5) & (size -1);
+    sketch[hash >> 5] |= 1 << (hash & (32-1));
   }
 
   return new Object(id, LABEL_GOLDFINGER, sketch.size() * sizeof(IdType), &sketch[0]);
