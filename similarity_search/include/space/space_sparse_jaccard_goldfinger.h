@@ -44,7 +44,7 @@ template <typename dist_t>
 class SpaceSparseJaccardGoldfinger : public SpaceBitJaccard<dist_t, uint32_t>
 {
 public:
-  explicit SpaceSparseJaccardGoldfinger() {}
+  explicit SpaceSparseJaccardGoldfinger(const uint32_t& nbBits);
   virtual ~SpaceSparseJaccardGoldfinger() {}
 
   /* 
@@ -75,6 +75,8 @@ public:
 
 protected:
   Object *CreateObjFromIds(IdType id, LabelType label, const vector<IdType> &InpVect) const;
+
+  uint32_t nbBits_;
 
 private:
   DISABLE_COPY_AND_ASSIGN(SpaceSparseJaccardGoldfinger);

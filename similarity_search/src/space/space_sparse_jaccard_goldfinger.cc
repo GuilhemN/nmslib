@@ -67,6 +67,11 @@ static void ReadIdList(string line, LabelType& label, vector<IdType>& v)
   sort(v.begin(), v.end());
 }
 
+
+template <typename dist_t>
+SpaceSparseJaccardGoldfinger<dist_t>::SpaceSparseJaccardGoldfinger(const uint32_t& nbBits) : nbBits_(nbBits) {
+}
+
 template <typename dist_t>
 unique_ptr<Object>
 SpaceSparseJaccardGoldfinger<dist_t>::CreateObjFromStr(IdType id, LabelType label, const string &s,
@@ -93,14 +98,14 @@ Object *SpaceSparseJaccardGoldfinger<dist_t>::CreateObjFromIds(IdType id, LabelT
   if (label == LABEL_GOLDFINGER)
     return new Object(id, label, InpVect.size() * sizeof(IdType), &InpVect[0]);
 
-  int size = 1024;
-  vector<IdType> sketch((size+31)/32, 0);
+  // int size = 1024;
+  vector<IdType> sketch((nbBits_+31)/32+1, 0);
 
   for (IdType id: InpVect) {
-    IdType hash = (id*5) & (size -1);
+    size_t hash = (id*5) & (nbBits_ - 1);
     sketch[hash >> 5] |= 1 << (hash & (32-1));
   }
-  sketch.push_back(size);
+  sketch[sketch.size()-1] = nbBits_;
 
   return new Object(id, LABEL_GOLDFINGER, sketch.size() * sizeof(IdType), &sketch[0]);
 };

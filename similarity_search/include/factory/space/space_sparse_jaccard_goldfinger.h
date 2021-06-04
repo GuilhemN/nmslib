@@ -26,9 +26,13 @@ namespace similarity {
 template <typename dist_t>
 Space<dist_t>* CreateSpaceSparseJaccardGoldfinger(const AnyParams& AllParams) {
   AnyParamManager pmgr(AllParams);
+
+  string nbBits;
+
+  pmgr.GetParamRequired("nb_bits", nbBits);
   pmgr.CheckUnused();
 
-  return new SpaceSparseJaccardGoldfinger<dist_t>();
+  return new SpaceSparseJaccardGoldfinger<dist_t>(stoi(nbBits));
 }
 
 /*
