@@ -177,6 +177,37 @@ inline bool ReadVecDataEfficiently<int>(string line, vector<int>& res) {
   return true;
 }
 
+template <>
+inline bool ReadVecDataEfficiently<uint32_t>(string line, vector<uint32_t> &res)
+{
+  ReplaceSomePunct(line);
+  const char *ptr = line.c_str();
+  char *endPtr = nullptr;
+
+  res.clear();
+  errno = 0;
+
+  for (int val = strtoi_wrapper(ptr, &endPtr);
+       ptr != endPtr;
+       val = strtoi_wrapper(ptr, &endPtr))
+  {
+    ptr = endPtr;
+    if (errno == ERANGE)
+    {
+      errno = 0;
+      return false;
+    }
+    res.push_back(static_cast<uint32_t>(val));
+  }
+
+  if (errno == ERANGE)
+  {
+    errno = 0;
+    return false;
+  }
+
+  return true;
+}
 
 template <typename T>
 inline bool ReadSparseVecDataViaStream(string line, vector<SparseVectElem<T>>& res) {

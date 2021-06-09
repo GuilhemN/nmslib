@@ -29,6 +29,7 @@
 #include "permutation_utils.h"
 #include "logging.h"
 #include "experimentconf.h"
+#include "space_vector.h"
 
 
 // Defines an abstract base class for BitVector spaces
@@ -36,7 +37,7 @@
 namespace similarity {
 
 template <typename dist_t, typename dist_uint_t>
-class SpaceBitVector : public Space<dist_t> {
+class SpaceBitVector : public VectorSpaceSimpleStorage<dist_t, dist_uint_t> {
  public:
   explicit SpaceBitVector() {}
   virtual ~SpaceBitVector() {}
@@ -68,45 +69,21 @@ class SpaceBitVector : public Space<dist_t> {
   }
 
   // Create a string representation of an object.
-  virtual string CreateStrFromObj(const Object* pObj, const string& externId /* ignored */) const {
-    stringstream out;
-    const dist_uint_t* p = reinterpret_cast<const dist_uint_t*>(pObj->data());
-    const size_t length = pObj->datalength() / sizeof(dist_uint_t)
-                          - 1; // the last integer is an original number of elements
-    const size_t elemQty = p[length]; // last elem
+  // virtual string CreateStrFromObj(const Object* pObj, const string& externId /* ignored */) const {
+  //   stringstream out;
+  //   const dist_uint_t* p = reinterpret_cast<const dist_uint_t*>(pObj->data());
+  //   const size_t length = pObj->datalength() / sizeof(dist_uint_t)
+  //                         - 1; // the last integer is an original number of elements
+  //   const size_t elemQty = p[length]; // last elem
 
-    for (size_t i = 0; i < elemQty; ++i) {
-      if (i) out << " ";
-      out << ((p[i/32] >> (i & 31)) & 1);
-    }
+  //   for (size_t i = 0; i < elemQty; ++i) {
+  //     if (i) out << " ";
+  //     out << ((p[i/32] >> (i & 31)) & 1);
+  //   }
 
-    return out.str();
-  }
+  //   return out.str();
+  // }
 
-  // Open a file for reading, fetch a header (if there is any) and memorize an input state
-  virtual unique_ptr<DataFileInputState> OpenReadFileHeader(const string& inpFileName) const {
-    return unique_ptr<DataFileInputState>(new DataFileInputStateVec(inpFileName));
-  }
-
-  // Open a file for writing, write a header (if there is any) and memorize an output state
-  virtual unique_ptr<DataFileOutputState> OpenWriteFileHeader(const ObjectVector& dataset,
-                                                              const string& outFileName) const {
-    return unique_ptr<DataFileOutputState>(new DataFileOutputState(outFileName));
-  }
-
-  /*
-   * Read a string representation of the next object in a file as well
-   * as its label. Return false, on EOF.
-   */
-  virtual bool ReadNextObjStr(DataFileInputState &inpStateBase, string& strObj, LabelType& label, string& externId) const {
-    externId.clear();
-    DataFileInputStateOneFile* pInpState = dynamic_cast<DataFileInputStateOneFile*>(&inpStateBase);
-    CHECK_MSG(pInpState != NULL, "Bug: unexpected pointer type");
-    if (!pInpState->inp_file_) return false;
-    if (!getline(pInpState->inp_file_, strObj)) return false;
-    pInpState->line_num_++;
-    return true;
-  }
   /** End of standard functions to read/write/create objects */
 
   /*

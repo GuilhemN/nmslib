@@ -72,17 +72,15 @@ public:
   // Create a string representation of an object
   // The string representation may include external ID.
   // virtual string CreateStrFromObj(const Object *pObj, const string &externId) const;
+  virtual Object *CreateObjFromVect(IdType id, LabelType label, const std::vector<uint32_t> &InpVect) const override;
 
 protected:
-  Object *CreateObjFromIds(IdType id, LabelType label, const vector<IdType> &InpVect) const;
-
   uint32_t nbBits_;
 
 private:
   DISABLE_COPY_AND_ASSIGN(SpaceSparseJaccardGoldfinger);
-  
 };
 
-}  // namespace similarity
+} // namespace similarity
 
 #endif 

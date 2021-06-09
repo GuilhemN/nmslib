@@ -47,6 +47,7 @@ const char* data_suff = ".dat";
 enum DistType {
   DISTTYPE_FLOAT,
   DISTTYPE_INT,
+  DISTTYPE_UINT,
   DISTTYPE_DEFAULT
 };
 
@@ -310,7 +311,7 @@ struct IndexWrapper {
   py::object writeObject(const Object * obj) {
     switch (data_type) {
       case DATATYPE_DENSE_VECTOR: {
-        auto vectSpacePtr = reinterpret_cast<VectorSpace<dist_t, dist_uint_t>*>(space.get());
+        auto vectSpacePtr = static_cast<VectorSpace<dist_t, dist_uint_t> *>(space.get());
         py::list ret;
         const dist_uint_t *values = reinterpret_cast<const dist_uint_t *>(obj->data());
         size_t elemQty = vectSpacePtr->GetElemQty(obj);
@@ -462,7 +463,7 @@ PYBIND11_PLUGIN(nmslib) {
   py::enum_<DistType>(m, "DistType")
     .value("FLOAT", DISTTYPE_FLOAT)
     .value("INT", DISTTYPE_INT)
-    .value("DEFAULT", DISTTYPE_DEFAULT);
+    .value("UINT", DISTTYPE_UINT);
 
   py::enum_<DataType>(m, "DataType")
     .value("DENSE_VECTOR", DATATYPE_DENSE_VECTOR)
@@ -482,25 +483,38 @@ PYBIND11_PLUGIN(nmslib) {
           distUintType = dtype;
         }
 
-        py::object ret = py::none();
-        if (DISTTYPE_FLOAT == dtype && DISTTYPE_FLOAT == distUintType) {
-          auto index = new IndexWrapper<float, float>(method, space, space_params, data_type, dtype, distUintType);
-          ret = py::cast(index, py::return_value_policy::take_ownership);
-        } else if (DISTTYPE_FLOAT == dtype && DISTTYPE_INT == distUintType) {
-          auto index = new IndexWrapper<float, int>(method, space, space_params, data_type, dtype, distUintType);
-          ret = py::cast(index, py::return_value_policy::take_ownership);
-        } else if (DISTTYPE_INT == dtype && DISTTYPE_FLOAT == distUintType) {
-          auto index = new IndexWrapper<int, float>(method, space, space_params, data_type, dtype, distUintType);
-          ret = py::cast(index, py::return_value_policy::take_ownership);
-        } else if (DISTTYPE_INT == dtype && DISTTYPE_INT == distUintType) {
-          auto index = new IndexWrapper<int, int>(method, space, space_params, data_type, dtype, distUintType);
-          ret = py::cast(index, py::return_value_policy::take_ownership);
-        } else {
-          // should never happen
-          throw std::invalid_argument("Invalid DistType");
+        if (DISTTYPE_FLOAT == dtype) {
+          switch (distUintType) {
+            case DISTTYPE_FLOAT: {
+              auto index = new IndexWrapper<float, float>(method, space, space_params, data_type, dtype, distUintType);
+              return py::cast(index, py::return_value_policy::take_ownership);
+            }
+
+            case DISTTYPE_INT: {
+              auto index = new IndexWrapper<float, int32_t>(method, space, space_params, data_type, dtype, distUintType);
+              return py::cast(index, py::return_value_policy::take_ownership);
+            }
+
+            case DISTTYPE_UINT: {
+              auto index = new IndexWrapper<float, uint32_t>(method, space, space_params, data_type, dtype, distUintType);
+              return py::cast(index, py::return_value_policy::take_ownership);
+            }
+          }
+        } else if (DISTTYPE_INT == dtype) {
+          switch (distUintType) {
+            case DISTTYPE_INT: {
+              auto index = new IndexWrapper<int32_t, int32_t>(method, space, space_params, data_type, dtype, distUintType);
+              return py::cast(index, py::return_value_policy::take_ownership);
+            }
+
+            case DISTTYPE_UINT: {
+              auto index = new IndexWrapper<int32_t, uint32_t>(method, space, space_params, data_type, dtype, distUintType);
+              return py::cast(index, py::return_value_policy::take_ownership);
+            }
+          }
         }
-  
-        return ret;
+
+        throw std::invalid_argument("Invalid couple (distance type, input type). Only (int, int), (float, float), (float, int), (float, uint) are supported.");
       },
       py::arg("space") = "cosinesimil",
       py::arg("space_params") = py::none(),
@@ -529,9 +543,10 @@ PYBIND11_PLUGIN(nmslib) {
   py::module dist_module = m.def_submodule("dist",
     "Contains Indexes and Spaces for different Distance Types");
   exportIndex<int>(&dist_module);
+  exportIndex<int, uint32_t>(&dist_module);
   exportIndex<float>(&dist_module);
-  exportIndex<float, int>(&dist_module);
-  exportIndex<int, float>(&dist_module);
+  exportIndex<float, int32_t>(&dist_module);
+  exportIndex<float, uint32_t>(&dist_module);
 
   exportLegacyAPI(&m);
 
@@ -664,9 +679,10 @@ void exportIndex(py::module * m) {
 }
 
 template <> std::string distName<int>() { return "Int"; }
+template <> std::string distName<int, uint32_t>() { return "IntWithUIntInput"; }
 template <> std::string distName<float>() { return "Float"; }
-template <> std::string distName<float, int>() { return "FloatWithIntInput"; }
-template <> std::string distName<int, float>() { return "IntWithFloatInput"; }
+template <> std::string distName<float, int32_t>() { return "FloatWithIntInput"; }
+template <> std::string distName<float, uint32_t>() { return "FloatWithUIntInput"; }
 
 void freeAndClearObjectVector(ObjectVector& data) {
   for (auto datum : data) {
@@ -730,7 +746,8 @@ void exportLegacyAPI(py::module * m) {
     if (data_type == DATATYPE_DENSE_VECTOR) {
       DistType dist_type = py::cast<DistType>(self.attr("distUintType"));
       if (((dist_type == DISTTYPE_FLOAT) && (!py::isinstance<py::array_t<float>>(data)))  ||
-          ((dist_type == DISTTYPE_INT) && (!py::isinstance<py::array_t<int>>(data)))) {
+          ((dist_type == DISTTYPE_INT) && (!py::isinstance<py::array_t<int>>(data)))  ||
+          ((dist_type == DISTTYPE_UINT) && (!py::isinstance<py::array_t<uint>>(data)))) {
         throw py::value_error("Invalid datatype for data in addDataPointBatch");
       }
     }

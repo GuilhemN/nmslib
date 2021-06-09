@@ -143,8 +143,10 @@ Object* VectorSpace<dist_t, dist_uint_t>::CreateObjFromVect(IdType id, LabelType
   return new Object(id, label, InpVect.size() * sizeof(dist_uint_t), &InpVect[0]);
 };
 
-template class VectorSpace<float, PivotIdType>;
-template class VectorSpace<PivotIdType>;
+template class VectorSpace<float, int32_t>;
+template class VectorSpace<float, uint32_t>;
 template class VectorSpace<float>;
+template class VectorSpace<int32_t, int32_t>;
+template class VectorSpace<int32_t, uint32_t>;
 
 }  // namespace similarity

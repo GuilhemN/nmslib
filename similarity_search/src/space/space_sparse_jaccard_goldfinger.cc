@@ -33,7 +33,7 @@ namespace similarity {
 
 using namespace std;
 
-static void ReadIdList(string line, LabelType& label, vector<IdType>& v)
+static void ReadIdList(string line, LabelType &label, vector<uint32_t> &v)
 {
   v.clear();
 
@@ -85,29 +85,29 @@ SpaceSparseJaccardGoldfinger<dist_t>::CreateObjFromStr(IdType id, LabelType labe
       THROW_RUNTIME_ERR(err);
     }
   }
-  vector<IdType>  ids;
+  vector<uint32_t> ids;
   ReadIdList(s, label, ids);
-  return unique_ptr<Object>(CreateObjFromIds(id, label, ids));
+  return unique_ptr<Object>(CreateObjFromVect(id, label, ids));
 }
 
 /** End of standard functions to read/write/create objects */
 
 template <typename dist_t>
-Object *SpaceSparseJaccardGoldfinger<dist_t>::CreateObjFromIds(IdType id, LabelType label, const vector<IdType> &InpVect) const
+Object *SpaceSparseJaccardGoldfinger<dist_t>::CreateObjFromVect(IdType id, LabelType label, const std::vector<uint32_t> &InpVect) const
 {
   if (label == LABEL_GOLDFINGER)
-    return new Object(id, label, InpVect.size() * sizeof(IdType), &InpVect[0]);
+    return new Object(id, label, InpVect.size() * sizeof(uint32_t), &InpVect[0]);
 
   // int size = 1024;
-  vector<IdType> sketch((nbBits_+31)/32+1, 0);
+  vector<uint32_t> sketch((nbBits_ + 31) / 32 + 1, 0);
 
-  for (IdType id: InpVect) {
+  for (uint32_t id: InpVect) {
     size_t hash = (id*5) & (nbBits_ - 1);
     sketch[hash >> 5] |= 1 << (hash & (32-1));
   }
   sketch[sketch.size()-1] = nbBits_;
 
-  return new Object(id, LABEL_GOLDFINGER, sketch.size() * sizeof(IdType), &sketch[0]);
+  return new Object(id, LABEL_GOLDFINGER, sketch.size() * sizeof(uint32_t), &sketch[0]);
 };
 
 template class SpaceSparseJaccardGoldfinger<float>;
