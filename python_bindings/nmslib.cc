@@ -461,7 +461,8 @@ PYBIND11_PLUGIN(nmslib) {
 
   py::enum_<DistType>(m, "DistType")
     .value("FLOAT", DISTTYPE_FLOAT)
-    .value("INT", DISTTYPE_INT);
+    .value("INT", DISTTYPE_INT)
+    .value("DEFAULT", DISTTYPE_DEFAULT);
 
   py::enum_<DataType>(m, "DataType")
     .value("DENSE_VECTOR", DATATYPE_DENSE_VECTOR)
