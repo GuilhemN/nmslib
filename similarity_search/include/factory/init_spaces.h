@@ -32,6 +32,7 @@
 #include "factory/space/space_renyi_diverg.h"
 #include "factory/space/space_sparse_jaccard.h"
 #include "factory/space/space_sparse_jaccard_goldfinger.h"
+#include "factory/space/space_sparse_jaccard_fastsim.h"
 #include "factory/space/space_sparse_dense_fusion.h"
 #if defined(WITH_EXTRAS)
 #include "factory/space/space_sqfd.h"
@@ -105,6 +106,7 @@ inline void initSpaces() {
 
   REGISTER_SPACE_CREATOR(float, SPACE_SPARSE_JACCARD, CreateSpaceSparseJaccard)
   REGISTER_SPACE_CREATOR(float, SPACE_SPARSE_JACCARD_GOLDFINGER, CreateSpaceSparseJaccardGoldfinger)
+  REGISTER_SPACE_CREATOR(float, SPACE_SPARSE_JACCARD_FASTSIM, CreateSpaceSparseJaccardFastSim)
 
 #if defined(WITH_EXTRAS)
   // Signature Quadratic Form Distance
