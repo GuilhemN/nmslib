@@ -116,10 +116,11 @@ protected:
 
     int c = 0;
     for (int i = 0; i < sketchSize_; i++) {
-      c += p1[i] == p2[i];
+      if (p1[i] == p2[i])
+        c++;
     }
 
-    return (dist_t) c / sketchSize_;
+    return (dist_t) c / (dist_t) sketchSize_;
   }
 
 private:
