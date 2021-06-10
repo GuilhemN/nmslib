@@ -38,7 +38,7 @@ template <typename dist_t>
 SpaceSparseJaccardFastSim<dist_t>::SpaceSparseJaccardFastSim(const uint32_t &sketchSize)
 {
   int p = 1;
-  power_of_hash = 1;
+  power_of_hash = 0;
   while (p < sketchSize)
   {
     p <<= 1;
@@ -85,18 +85,18 @@ template <typename dist_t>
 Object *SpaceSparseJaccardFastSim<dist_t>::CreateObjFromVect(IdType id, LabelType label, const std::vector<int32_t> &InpVect) const
 {
   if (label == LABEL_FASTSIM)
-    return new Object(id, label, InpVect.size() * sizeof(int32_t), &InpVect[0]);
+    return new Object(id, label, InpVect.size() * sizeof(uint32_t), &InpVect[0]);
 
-  vector<int32_t> sketch(sketchSize_, 0);
+  vector<uint32_t> sketch(sketchSize_, (sketchSize_ + 1) << (32 - (power_of_hash + 1)));
 
   int count = 0;
 
   for (int l = 0; l < 2 * sketchSize_; l++)
   {
-    for (uint32_t item : InpVect)
+    for (int32_t item : InpVect)
     {
       // hashing
-      int val = item;
+      uint val = (uint) item;
       long v11 = 0;
       int v12 = 0;
       long v2 = 0;
@@ -129,13 +129,13 @@ Object *SpaceSparseJaccardFastSim<dist_t>::CreateObjFromVect(IdType id, LabelTyp
         b = l - sketchSize_;
       }
 
-      int v = (int)(hash >> (power_of_hash + 1));
-      v |= (l << (31 - power_of_hash));
+      uint v = ((int) hash) >> (power_of_hash + 1);
+      v |= (l << (32 - (power_of_hash + 1)));
 
       // double v = l + ((hash / nb_hash) & ((1L << 30) - 1)) / ((double)(1L << 30)); // We only keep the 24 most significant bits and then convert to a float between zero and one (see https://docs.oracle.com/javase/7/docs/api/java/util/Random.html#nextFloat())
 
       // fulfilling of the profile
-      if (sketch[b] > 2 * sketchSize_)
+      if ((sketch[b]) > sketchSize_ << (32 - (power_of_hash + 1)))
       { // first encounter
         count++;
       }
