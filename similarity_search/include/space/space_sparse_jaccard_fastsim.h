@@ -63,8 +63,8 @@ public:
     throw runtime_error("Cannot create vector for the space: " + StrDesc());
   }
   unsigned ComputeOverlap(const Object* pObj1, const Object* pObj2) const {
-    const IdType* p1 = reinterpret_cast<const IdType*>(pObj1->data());
-    const IdType* p2 = reinterpret_cast<const IdType*>(pObj2->data());
+    const float* p1 = reinterpret_cast<const float*>(pObj1->data());
+    const float* p2 = reinterpret_cast<const float*>(pObj2->data());
 
     int c = 0;
     for (int i = 0; i < sketchSize_; i++) {
@@ -74,9 +74,9 @@ public:
     return c;
   }
   unsigned ComputeOverlap(const Object* pObj1, const Object* pObj2, const Object* pObj3) const {
-    const IdType* p1 = reinterpret_cast<const IdType*>(pObj1->data());
-    const IdType* p2 = reinterpret_cast<const IdType*>(pObj2->data());
-    const IdType* p3 = reinterpret_cast<const IdType*>(pObj3->data());
+    const float* p1 = reinterpret_cast<const float*>(pObj1->data());
+    const float* p2 = reinterpret_cast<const float*>(pObj2->data());
+    const float* p3 = reinterpret_cast<const float*>(pObj3->data());
 
     int c = 0;
     for (int i = 0; i < sketchSize_; i++) {
@@ -90,20 +90,9 @@ public:
 
 protected:
   int sketchSize_;
-  vector<uint64_t> h11;
-  vector<uint32_t> h12;
-  vector<uint64_t> h2;
-  // The number of blocks we use for the hashing
-  int c = 4;
-  int d = 4;
+  vector<uint32_t> seeds;
 
-  int power_alphabetc;
-  int alphabet_sizec;
-  int power_alphabetd;
-  int alphabet_sized;
   int power_of_hash;
-  int maskc;
-  int maskd;
 
   /*
   * This function should always be protected.

@@ -34,6 +34,23 @@ namespace similarity {
 
 using namespace std;
 
+int jenkins(int item, int hash) {
+  int a = hash * 0xcc9e2d51;
+  int b = hash * (0x1b873593)^(hash-1);
+  int c = item;
+  a=a-b;  a=a-c;  a=a^(c >> 13);
+  b=b-c;  b=b-a;  b=b^(a << 8);
+  c=c-a;  c=c-b;  c=c^(b >> 13);
+  a=a-b;  a=a-c;  a=a^(c >> 12);
+  b=b-c;  b=b-a;  b=b^(a << 16);
+  c=c-a;  c=c-b;  c=c^(b >> 5);
+  a=a-b;  a=a-c;  a=a^(c >> 3);
+  b=b-c;  b=b-a;  b=b^(a << 10);
+  c=c-a;  c=c-b;  c=c^(b >> 15);
+      
+  return c;
+}
+
 template <typename dist_t>
 SpaceSparseJaccardFastSim<dist_t>::SpaceSparseJaccardFastSim(const uint32_t &sketchSize)
 {
@@ -51,32 +68,12 @@ SpaceSparseJaccardFastSim<dist_t>::SpaceSparseJaccardFastSim(const uint32_t &ske
   std::random_device rd;  //Will be used to obtain a seed for the random number engine
   std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
   std::uniform_int_distribution<uint32_t> drawint;
-  std::uniform_int_distribution<uint64_t> drawlong;
 
-  // We consider 20 bits are sufficient to store items' id
-  power_alphabetc = 20 / c;
-  alphabet_sizec = 1 << power_alphabetc; // 2 ** power_alphabetc
-
-  power_alphabetd = 32 / d;
-  alphabet_sized = 1 << power_alphabetd; // 2 ** (32/d)
-
-  h11 = vector<uint64_t>(sketchSize_ * alphabet_sizec * c);
-  h12 = vector<uint32_t>(sketchSize_ * alphabet_sizec * c);
-  for (int i = 0; i < sketchSize_ * alphabet_sizec * c; i++)
+  seeds = vector<uint32_t>(4 * sketchSize_);
+  for (int i = 0; i < 4*sketchSize_; i++)
   {
-    h11[i] = drawlong(gen);
-    h12[i] = drawint(gen);
+    seeds[i] = drawint(gen);
   }
-
-  h2 = vector<uint64_t>(alphabet_sized * d);
-  for (int i = 0; i < alphabet_sized * d; i++)
-  {
-    h2[i] = drawlong(gen);
-  }
-
-  // COMPUTATION OF THE PROFILES
-  maskc = (1 << (power_alphabetc + 1)) - 1;
-  maskd = (1 << (power_alphabetd + 1)) - 1;
 }
 
 /** End of standard functions to read/write/create objects */
@@ -87,55 +84,35 @@ Object *SpaceSparseJaccardFastSim<dist_t>::CreateObjFromVect(IdType id, LabelTyp
   if (label == LABEL_FASTSIM)
     return new Object(id, label, InpVect.size() * sizeof(uint32_t), &InpVect[0]);
 
-  vector<uint32_t> sketch(sketchSize_, sketchSize_ << (32 - (power_of_hash+1)));
+  vector<float> sketch(sketchSize_, sketchSize_+2);
 
   int count = 0;
 
-  for (int l = 0; l < 2 * sketchSize_; l++)
+  for (int l = 0; l < 2*sketchSize_; l++)
   {
     for (int32_t item : InpVect)
     {
+      
       // hashing
       uint val = (uint) item;
-      long v11 = 0;
-      int v12 = 0;
-      long v2 = 0;
-
-      // We compute h1
-      for (int m = 0; m < c; m++)
-      {
-        v11 ^= h11[(alphabet_sizec * (l + sketchSize_ * m) + val) & maskc];
-        v12 ^= h12[(alphabet_sizec * (l + sketchSize_ * m) + val) & maskc];
-
-        val >>= power_alphabetc;
-      }
-
-      // We compute h2
-      for (int m = 0; m < d; m++)
-      {
-        v2 ^= h2[(m * alphabet_sized + v12) & maskd];
-        v12 >>= power_alphabetd;
-      }
-
-      long hash = v11 ^ v2;
 
       int b;
       if (l < sketchSize_)
       {
-        b = (int)(hash & (sketchSize_ - 1));
+        b = (int)(jenkins(val, seeds[2*l]) & (sketchSize_ - 1));
       }
       else
       {
         b = l - sketchSize_;
       }
 
-      uint v = ((int) hash) >> (power_of_hash + 1);
-      v |= (l << (32 - (power_of_hash+1)));
+      float v = (jenkins(val, seeds[2*l+1]) & (1L << 24)) / (float) (1L << 24);
+      v += l;
 
       // double v = l + ((hash / nb_hash) & ((1L << 30) - 1)) / ((double)(1L << 30)); // We only keep the 24 most significant bits and then convert to a float between zero and one (see https://docs.oracle.com/javase/7/docs/api/java/util/Random.html#nextFloat())
 
       // fulfilling of the profile
-      if (sketch[b] >= (uint) (sketchSize_ << (32 - (power_of_hash+1))))
+      if (sketch[b] > sketchSize_ + 1)
       { // first encounter
         count++;
       }
@@ -148,7 +125,7 @@ Object *SpaceSparseJaccardFastSim<dist_t>::CreateObjFromVect(IdType id, LabelTyp
     }
   }
 
-  return new Object(id, LABEL_FASTSIM, sketch.size() * sizeof(int32_t), &sketch[0]);
+  return new Object(id, LABEL_FASTSIM, sketch.size() * sizeof(float), &sketch[0]);
 };
 
 template class SpaceSparseJaccardFastSim<float>;
