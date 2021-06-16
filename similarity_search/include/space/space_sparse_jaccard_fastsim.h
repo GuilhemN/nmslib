@@ -90,7 +90,7 @@ public:
 
 protected:
   int sketchSize_;
-  vector<uint32_t> seeds;
+  vector<uint64_t> seeds;
 
   int power_of_hash;
 
@@ -100,8 +100,8 @@ protected:
   * should be able to access it.
   */
   virtual dist_t HiddenDistance(const Object* pObj1, const Object* pObj2) const {
-    const IdType* p1 = reinterpret_cast<const IdType*>(pObj1->data());
-    const IdType* p2 = reinterpret_cast<const IdType*>(pObj2->data());
+    const float *p1 = reinterpret_cast<const float*>(pObj1->data());
+    const float *p2 = reinterpret_cast<const float*>(pObj2->data());
 
     int c = 0;
     for (int i = 0; i < sketchSize_; i++) {

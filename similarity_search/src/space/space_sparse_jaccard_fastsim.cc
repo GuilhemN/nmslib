@@ -48,13 +48,11 @@ SpaceSparseJaccardFastSim<dist_t>::SpaceSparseJaccardFastSim(const uint32_t &ske
 
   sketchSize_ = p;
 
-  // INITIALISATION OF THE TABULATION HASHING, SEE https://arxiv.org/pdf/1411.7191.pdf
-  std::random_device rd;  //Will be used to obtain a seed for the random number engine
-  std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-  std::uniform_int_distribution<uint32_t> drawint;
+  std::default_random_engine gen;
+  std::uniform_int_distribution<uint64_t> drawint;
 
-  seeds = vector<uint32_t>(4 * sketchSize_);
-  for (int i = 0; i < 4*sketchSize_; i++)
+  seeds = vector<uint64_t>(2*sketchSize_);
+  for (int i = 0; i < 2*sketchSize_; i++)
   {
     seeds[i] = drawint(gen);
   }
@@ -76,7 +74,7 @@ Object *SpaceSparseJaccardFastSim<dist_t>::CreateObjFromVect(IdType id, LabelTyp
   {
     for (int32_t item : InpVect)
     {
-      uint64_t hash = SpookyHash::Hash64(&item, sizeof(int32_t), seeds[2 * l]);
+      uint64_t hash = SpookyHash::Hash64(&item, sizeof(int32_t), seeds[l]);
 
       int b;
       if (l < sketchSize_)
@@ -88,8 +86,7 @@ Object *SpaceSparseJaccardFastSim<dist_t>::CreateObjFromVect(IdType id, LabelTyp
         b = l - sketchSize_;
       }
 
-      float v = ((hash >> 32) & ((1L << 24) - 1)) / (float) (1L << 24);
-      v += l;
+      float v = l + ((float) ((hash >> 32) & ((1L << 24) - 1)) / (float) (1L << 24));
 
       // double v = l + ((hash / nb_hash) & ((1L << 30) - 1)) / ((double)(1L << 30)); // We only keep the 24 most significant bits and then convert to a float between zero and one (see https://docs.oracle.com/javase/7/docs/api/java/util/Random.html#nextFloat())
 
