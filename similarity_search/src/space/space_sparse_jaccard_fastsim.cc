@@ -29,27 +29,11 @@
 #include "experimentconf.h"
 #include "read_data.h"
 #include "space/space_sparse_jaccard_fastsim.h"
+#include "SpookyV2.h"
 
 namespace similarity {
 
 using namespace std;
-
-int jenkins(int item, int hash) {
-  int a = hash * 0xcc9e2d51;
-  int b = hash * (0x1b873593)^(hash-1);
-  int c = item;
-  a=a-b;  a=a-c;  a=a^(c >> 13);
-  b=b-c;  b=b-a;  b=b^(a << 8);
-  c=c-a;  c=c-b;  c=c^(b >> 13);
-  a=a-b;  a=a-c;  a=a^(c >> 12);
-  b=b-c;  b=b-a;  b=b^(a << 16);
-  c=c-a;  c=c-b;  c=c^(b >> 5);
-  a=a-b;  a=a-c;  a=a^(c >> 3);
-  b=b-c;  b=b-a;  b=b^(a << 10);
-  c=c-a;  c=c-b;  c=c^(b >> 15);
-      
-  return c;
-}
 
 template <typename dist_t>
 SpaceSparseJaccardFastSim<dist_t>::SpaceSparseJaccardFastSim(const uint32_t &sketchSize)
@@ -92,21 +76,19 @@ Object *SpaceSparseJaccardFastSim<dist_t>::CreateObjFromVect(IdType id, LabelTyp
   {
     for (int32_t item : InpVect)
     {
-      
-      // hashing
-      uint val = (uint) item;
+      uint64_t hash = SpookyHash::Hash64(&item, sizeof(int32_t), seeds[2 * l]);
 
       int b;
       if (l < sketchSize_)
       {
-        b = (int)(jenkins(val, seeds[2*l]) & (sketchSize_ - 1));
+        b = (int)(hash & (sketchSize_ - 1));
       }
       else
       {
         b = l - sketchSize_;
       }
 
-      float v = (jenkins(val, seeds[2*l+1]) & ((1L << 24) - 1)) / (float) (1L << 24);
+      float v = ((hash >> 32) & ((1L << 24) - 1)) / (float) (1L << 24);
       v += l;
 
       // double v = l + ((hash / nb_hash) & ((1L << 30) - 1)) / ((double)(1L << 30)); // We only keep the 24 most significant bits and then convert to a float between zero and one (see https://docs.oracle.com/javase/7/docs/api/java/util/Random.html#nextFloat())
