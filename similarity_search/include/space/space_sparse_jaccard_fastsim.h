@@ -63,27 +63,10 @@ public:
     throw runtime_error("Cannot create vector for the space: " + StrDesc());
   }
   unsigned ComputeOverlap(const Object* pObj1, const Object* pObj2) const {
-    const float* p1 = reinterpret_cast<const float*>(pObj1->data());
-    const float* p2 = reinterpret_cast<const float*>(pObj2->data());
-
-    int c = 0;
-    for (int i = 0; i < sketchSize_; i++) {
-      c += p1[i] == p2[i];
-    }
-
-    return c;
+    throw runtime_error("Cannot compute overlap for the space " + StrDesc());
   }
   unsigned ComputeOverlap(const Object* pObj1, const Object* pObj2, const Object* pObj3) const {
-    const float* p1 = reinterpret_cast<const float*>(pObj1->data());
-    const float* p2 = reinterpret_cast<const float*>(pObj2->data());
-    const float* p3 = reinterpret_cast<const float*>(pObj3->data());
-
-    int c = 0;
-    for (int i = 0; i < sketchSize_; i++) {
-      c += p1[i] == p2[i] && p2[i] == p3[i];
-    }
-
-    return c;
+    throw runtime_error("Cannot compute overlap for the space: " + StrDesc());
   }
 
   virtual Object *CreateObjFromVect(IdType id, LabelType label, const std::vector<int32_t> &InpVect) const override;
