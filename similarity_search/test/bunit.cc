@@ -44,6 +44,8 @@ int TestRunner::RunAllTests() {
   int num_failed = 0;
   int num_disabled = 0;
   for (auto it = tests_.begin(); it != tests_.end(); ++it) {
+    if (std::get<0>(*it) != "FastSim") 
+      continue;
     std::cout << "----- " << std::get<0>(*it) << " -----" << std::endl;
     if (std::get<2>(*it)) {
       ++num_disabled;

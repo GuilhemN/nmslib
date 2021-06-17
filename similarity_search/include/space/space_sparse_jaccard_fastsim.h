@@ -71,6 +71,11 @@ public:
 
   virtual Object *CreateObjFromVect(IdType id, LabelType label, const std::vector<int32_t> &InpVect) const override;
 
+  dist_t Distance(const Object *pObj1, const Object *pObj2)
+  {
+    return HiddenDistance(pObj1, pObj2);
+  }
+
 protected:
   int sketchSize_;
   vector<uint64_t> seeds;
