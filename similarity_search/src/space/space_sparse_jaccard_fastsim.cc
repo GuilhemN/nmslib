@@ -48,8 +48,10 @@ SpaceSparseJaccardFastSim<dist_t>::SpaceSparseJaccardFastSim(const uint32_t &ske
 
   sketchSize_ = p;
 
-  static random_device rdev;
-  static mt19937 randEngine(rdev());
+  const int seed = 3;
+  static mt19937 randEngine;
+  randEngine.seed(seed);
+
   std::uniform_int_distribution<uint64_t> drawint;
 
   seeds = vector<uint64_t>(2*sketchSize_);
