@@ -96,6 +96,7 @@ protected:
       if (p1[i] == p2[i])
         c++;
     }
+    std::cout << (dist_t) c / (dist_t) sketchSize_ << ' ' << sketchSize_ << ' ' << pObj1->datalength() << std::endl;
 
     return (dist_t) c / (dist_t) sketchSize_;
   }
