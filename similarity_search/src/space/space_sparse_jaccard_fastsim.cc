@@ -57,7 +57,7 @@ SpaceSparseJaccardFastSim<dist_t>::SpaceSparseJaccardFastSim(const uint32_t &ske
   seeds = vector<uint64_t>(2*sketchSize_);
   for (int i = 0; i < 2*sketchSize_; i++)
   {
-    seeds[i] = drawint(randEngine);
+    seeds[i] = i;
   }
 }
 

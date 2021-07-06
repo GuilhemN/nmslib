@@ -28,7 +28,7 @@ TEST(FastSim) {
   vector<float> results;
 
   for (int i = 0; i < 10000; i++) {
-    SpaceSparseJaccardFastSim<FLOAT_TYPE>* space = new SpaceSparseJaccardFastSim<FLOAT_TYPE>(16);
+    SpaceSparseJaccardFastSim<FLOAT_TYPE>* space = new SpaceSparseJaccardFastSim<FLOAT_TYPE>(128);
 
     vector<int32_t> data1 = {1, 2};
     Object *obj1 = space->CreateObjFromVect(0, 0, data1);
